@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Leaflet debug page</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" integrity="sha512-07I2e+7D8p6he1SIM+1twR5TIrhUQn9+I6yjqD53JQjFiMf8EtC93ty0/5vJTZGF8aAocvHYNEDJajGdNx1IsQ==" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet-src.js" integrity="sha512-WXoSHqw/t26DszhdMhOXOkI7qCiv5QWXhH9R7CgvgZMHz1ImlkVQ3uNsiQKu5wwbbxtPzFXd1hK4tzno2VqhpA==" crossorigin=""></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://leaflet.github.io/Leaflet.markercluster/example/screen.css" />
+
+  <link rel="stylesheet" href="https://leaflet.github.io/Leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://leaflet.github.io/Leaflet.markercluster/dist/MarkerCluster.Default.css" />
+  <script src="https://leaflet.github.io/Leaflet.markercluster/dist/leaflet.markercluster-src.js"></script>
+
+  <script src="https://leaflet.github.io/Leaflet.markercluster/example/realworld.50000.1.js"></script>
+  <script src="https://leaflet.github.io/Leaflet.markercluster/example/realworld.50000.2.js"></script>
+</head>
+<body>
+  <div id="progress"><div id="progress-bar"></div></div>
+  <div id="map"></div>
+  <span>Mouse over a cluster to see the bounds of its children and click a cluster to zoom to those bounds</span>
+  <script type="text/javascript">
+    const HOME = {
+      lat: 50.32269481418845,
+      lng: 18.656292557716373,
+    }
+    const NUMBER_OF_MARKERS = 50000
+    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Points &copy 2012 LINZ'
+    })
+    const map = L.map('map', { center: HOME, zoom: 13, layers: [tiles] });
+
+    console.time('Creating markers')
+
+    console.time('Creating ' + NUMBER_OF_MARKERS + ' random marker points')
+    const markers = new Array(NUMBER_OF_MARKERS).fill({ lat: 0, lon: 0, id: 0 }).map(marker => {
+      const r = 1 * Math.sqrt(Math.random())
+      const theta = Math.random() * 2 * Math.PI
+
+      return {
+        id: crypto.randomUUID(),
+        lat: HOME.lat + r * Math.cos(theta),
+        lon: HOME.lng + r * Math.sin(theta) * 2,
+      }
+    })
+    console.timeEnd('Creating ' + NUMBER_OF_MARKERS + ' random marker points')
+
+    const ICON_ON = L.icon({ iconUrl: '/default-marker-highlighted.png' })
+    const ICON_OFF = L.icon({ iconUrl: '/default-marker.png' })
+
+    const toMarker = marker => L
+      .marker([ marker.lat, marker.lon ], { icon: ICON_OFF })
+      .on('mouseover', e => { e.target.setIcon(ICON_ON) })
+      .on('mouseout', e => { e.target.setIcon(ICON_OFF) })
+
+    const clusters = L.markerClusterGroup()
+    console.time('Adding markers to cluster')
+    markers.map(toMarker).forEach(marker => clusters.addLayer(marker))
+    console.timeEnd('Adding markers to cluster')
+
+    console.time('Adding clusters to map')
+    map.addLayer(clusters);
+    console.timeEnd('Adding clusters to map')
+
+    console.timeEnd('Creating markers')
+</script>
+</body>
+</html>
