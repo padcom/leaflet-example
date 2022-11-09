@@ -25,7 +25,7 @@
       lat: 50.32269481418845,
       lng: 18.656292557716373,
     }
-    const NUMBER_OF_MARKERS = 50000
+    const NUMBER_OF_MARKERS = 200000
     const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Points &copy 2012 LINZ'
@@ -55,7 +55,7 @@
       .on('mouseover', e => { e.target.setIcon(ICON_ON) })
       .on('mouseout', e => { e.target.setIcon(ICON_OFF) })
 
-    const clusters = L.markerClusterGroup()
+    const clusters = L.markerClusterGroup({ chunkedLoading: true, chunkProgress: () => { console.log('here!') } })
     console.time('Adding markers to cluster')
     markers.map(toMarker).forEach(marker => clusters.addLayer(marker))
     console.timeEnd('Adding markers to cluster')
